@@ -1,0 +1,11 @@
+body {
+    background-color: lightgray;
+    color: darkslategray;
+    margin: 2rem;
+}
+
+button {
+    padding: 1rem;
+    border: 0;
+    box-shadow: black;
+}
