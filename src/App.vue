@@ -12,10 +12,12 @@ _items[1].active = true
 const items = ref(_items)
 
 function handleClickItem(clickedItem) {
+  console.log('handleClickItem')
   items.value.forEach((e) => {e.active = false})
   clickedItem.active = true
 }
 function handleChangeItemStatus(changedItem, event) {
+  console.log('handleChangeItemStatus')
   changedItem.done = event.target.checked
 }
 </script>
@@ -35,11 +37,18 @@ function handleChangeItemStatus(changedItem, event) {
               @click="handleClickItem(item)">
               <input
                 class="form-check-input me-1"
-                type="checkbox" value=""
+                type="checkbox"
                 :id="'checkbox'+index"
-                @change="(event) => {handleChangeItemStatus(item, event)}">
-              <label class="form-check-label" :for="'checkbox'+index">
-                {{ item.name }} - {{ item.done }}
+                @click.stop
+                v-model="item.done"  
+              >
+              <label
+                class="form-check-label"
+                :class="{'done-item': item.done}"
+                :for="'checkbox'+index"
+                @click.stop
+              >
+                {{ item.name }}
               </label>
             </a>
           </template>
@@ -52,5 +61,7 @@ function handleChangeItemStatus(changedItem, event) {
 
 
 <style scoped>
-
+  .done-item {
+    text-decoration: line-through;
+  }
 </style>
