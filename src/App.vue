@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const title = ref('todol')
 
@@ -31,10 +31,15 @@ watch(filterDoneItems, async()=>{
     filterStatusMessage.filterDoneItems : filterStatusMessage.all
 })
 
-function handleClickItem(clickedItem) {
-  console.log('handleClickItem')
+function activate(i) {
+  console.log('activate('+i+')')
   items.value.forEach((e) => {e.active = false})
-  clickedItem.active = true
+  items.value[i].active = true
+}
+
+function handleClickItem(clickedItem, index) {
+  console.log('handleClickItem')
+  activate(index)
 }
 /**
  * position...追加する位置（任意）
@@ -46,9 +51,9 @@ async function addItem(position) {
   _item.edit = true
   items.value.splice(position, 0, _item)
 
-  // 待機
+  // DOMが追加されるまで待機
   await document.getElementById('inputItemNameForItem0')
-  // フォーカスを当てる
+  // 追加されたinput要素にフォーカスを当てる
   const inputElement = document.getElementById('inputItemNameForItem' + position)
   inputElement.focus()
 
@@ -61,6 +66,29 @@ function deleteItem(deletedItem, index) {
   }
 
 }
+
+/**
+ * editのwatch用
+ */
+const editChanges = computed(() => {
+  return items.value.map(item => item.edit)
+})
+
+/**
+ * editがtrueからfalseになったときactivateする
+ */
+watch(editChanges,(newValue, oldValue) => {
+  console.log('watch(items) deep: true')
+  console.log(newValue)
+  console.log(oldValue)
+  for (let i=0; i < newValue.length; i++){
+    if (newValue[i] == false && oldValue[i] == true) {
+      activate(i)
+      break
+    }
+  }
+},{ deep: true })
+
 </script>
 
 <template>
@@ -107,7 +135,7 @@ function deleteItem(deletedItem, index) {
                   >
                   <button
                     class="btn btn-outline-secondary"
-                    @click="item.edit=false"
+                    @click.stop="item.edit=false"
                     value="保存"
                     >
                     <i class="bi-check"></i>
@@ -122,7 +150,7 @@ function deleteItem(deletedItem, index) {
                   v-show="!filterDoneItems||!item.done"
                   class="list-group-item list-group-item-action"
                   :class="{ 'active-item': item.active }"
-                  @click="handleClickItem(item)">
+                  @click="handleClickItem(item, index)">
                   <input
                     class="form-check-input me-1"
                     type="checkbox"
@@ -138,13 +166,13 @@ function deleteItem(deletedItem, index) {
                   </label>
                   <button class="btn btn-sm edit-button ml-5"
                     v-if="!item.done"
-                    @click="item.edit=true"
+                    @click.stop="item.edit=true"
                     value="編集"
                     >
                     <i class="bi-pencil-fill"></i>
                   </button>
                   <button class="btn btn-sm delete-button"
-                    @click="deleteItem(item, index)"
+                    @click.stop="deleteItem(item, index)"
                     value="削除"
                     >
                     <i class="bi-trash-fill"></i>
