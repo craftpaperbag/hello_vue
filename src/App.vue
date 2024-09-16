@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const title = ref('todol')
 
@@ -19,6 +19,17 @@ _items[1].active = true
 _items[2].edit = true
 
 const items = ref(_items)
+const filterStatusMessage = {
+  all: '全て',
+  filterDoneItems: '未完了のみ'
+}
+const filterStatus = ref(filterStatusMessage.all)
+
+const filterDoneItems = ref(false)
+watch(filterDoneItems, async()=>{
+  filterStatus.value = filterDoneItems.value ?
+    filterStatusMessage.filterDoneItems : filterStatusMessage.all
+})
 
 function handleClickItem(clickedItem) {
   console.log('handleClickItem')
@@ -49,6 +60,15 @@ async function addItem() {
       </div>
       <div class="col d-flex justify-content-end">
         <button class="btn"
+          @click="filterDoneItems=!filterDoneItems">
+          <label v-if="filterDoneItems">
+            全て表示する
+          </label>
+          <label v-else>
+            完了を隠す
+          </label>
+        </button>
+        <button class="btn"
           @click="addItem">
           <i class="bi-plus-circle"></i>
         </button>
@@ -56,6 +76,9 @@ async function addItem() {
     </div>
     <div class="row">
       <div class="col">
+        <span class="text-muted">
+          {{ filterStatus }}
+        </span>
         <div class="list-group">
           <template v-for="(item, index) in items" >
             <!-- 編集モード -->
@@ -84,6 +107,7 @@ async function addItem() {
             <!-- 通常モード -->
             <template v-else>
                 <a
+                  v-show="!filterDoneItems||!item.done"
                   class="list-group-item list-group-item-action"
                   :class="{ 'active-item': item.active }"
                   @click="handleClickItem(item)">
@@ -100,10 +124,10 @@ async function addItem() {
                     @click.stop>
                     {{ item.name }}
                   </label>
-                  <button class="btn btn-sm edit-button"
+                  <button class="btn btn-sm edit-button m-0"
+                    v-if="!item.done"
                     @click="item.edit=true"
                     value="編集"
-                    v-if="!item.done"
                     >
                     <i class="bi-pencil-fill"></i>
                   </button>
