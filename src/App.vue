@@ -36,17 +36,20 @@ function handleClickItem(clickedItem) {
   items.value.forEach((e) => {e.active = false})
   clickedItem.active = true
 }
-
-async function addItem() {
-  console.log('addItem')
+/**
+ * position...追加する位置（任意）
+ */
+async function addItem(position) {
+  console.log('addItem('+position+')')
+  if (!position) position = 0
   let _item = {...itemTemplate}
   _item.edit = true
-  items.value.unshift(_item)
+  items.value.splice(position, 0, _item)
 
   // 待機
   await document.getElementById('inputItemNameForItem0')
   // フォーカスを当てる
-  const inputElement = document.getElementById('inputItemNameForItem0')
+  const inputElement = document.getElementById('inputItemNameForItem' + position)
   inputElement.focus()
 
 }
@@ -99,7 +102,8 @@ function deleteItem(deletedItem, index) {
                   class="form-control"
                   :id="'inputItemNameForItem'+index"
                   placeholder="何をしますか？"
-                  @keyup.enter="item.edit=false"
+                  @keydown.enter="(e)=>{e.isComposing ? 'nothing to do' : item.edit=false}"
+                  @keydown.shift.enter="(e)=>{e.isComposing ? 'nothing to do' : addItem(index+1)}"
                   >
                   <button
                     class="btn btn-outline-secondary"
