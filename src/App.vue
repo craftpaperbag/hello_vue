@@ -50,6 +50,14 @@ async function addItem() {
   inputElement.focus()
 
 }
+
+function deleteItem(deletedItem, index) {
+  const confirmed = confirm('「' + deletedItem.name + '」を削除しますか？')
+  if (confirmed) {
+    items.value.splice(index,1)
+  }
+
+}
 </script>
 
 <template>
@@ -124,12 +132,18 @@ async function addItem() {
                     @click.stop>
                     {{ item.name }}
                   </label>
-                  <button class="btn btn-sm edit-button m-0"
+                  <button class="btn btn-sm edit-button ml-5"
                     v-if="!item.done"
                     @click="item.edit=true"
                     value="編集"
                     >
                     <i class="bi-pencil-fill"></i>
+                  </button>
+                  <button class="btn btn-sm delete-button"
+                    @click="deleteItem(item, index)"
+                    value="削除"
+                    >
+                    <i class="bi-trash-fill"></i>
                   </button>
                 </a>
             </template>
@@ -155,9 +169,16 @@ input::placeholder {
   text-decoration: line-through;
 }
 .edit-button {
-  color: white;
+  color: darkgrey;
 }
 .edit-button:hover {
+  color: blue;
+}
+
+.delete-button {
   color: darkgrey;
+}
+.delete-button:hover {
+  color: red;
 }
 </style>
