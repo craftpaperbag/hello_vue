@@ -12,8 +12,8 @@ const itemTemplate = {
 }
 
 /**
- * ダミーデータの設定
- */
+* ダミーデータの設定
+*/
 
 Array.from({length: 5}).forEach((element, i) => {
   _items.push({...itemTemplate})
@@ -75,9 +75,9 @@ function deleteItem(deletedItem, index) {
 }
 
 /**
- * activeタスクを編集モードにする
- * activeタスクがない場合は何もしない
- */
+* activeタスクを編集モードにする
+* activeタスクがない場合は何もしない
+*/
 async function editActiveItem() {
   for (let i=0; i < items.value.length; i++) {
     if (items.value[i].active) {
@@ -114,13 +114,13 @@ onMounted(() => {
   // enterを押すとactiveタスクの編集を開始する
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
-        // イベントが発生した要素がinput要素でない場合のみ
-        if (!event.target.matches('input')) {
-            // Enterキーが押された時の処理
-            editActiveItem()
-        }
+      // イベントが発生した要素がinput要素でない場合のみ
+      if (!event.target.matches('input')) {
+        // Enterキーが押された時の処理
+        editActiveItem()
+      }
     }
-})
+  })
 })
 
 </script>
