@@ -47,9 +47,16 @@ function handleClickItem(clickedItem, index) {
   activate(index)
 }
 
+function hasActive() {
+  for (let i=0; i<items.value.length; i++) {
+    if (items.value[i].active) return true
+  }
+  return false
+}
+
 async function focus(position) {
   // DOMが追加されるまで待機
-  await document.getElementById('inputItemNameForItem0')
+  await document.getElementById('inputItemNameForItem' + position)
   const inputElement = document.getElementById('inputItemNameForItem' + position)
   inputElement.focus()
 }
@@ -126,6 +133,12 @@ onMounted(() => {
         editActiveItem()
       }
     }
+
+    // Shift + Enter
+    if (event.shiftKey && event.key === 'Enter') {
+      // activeがなければ一番上にitemを追加
+      if ( ! hasActive() ) addItem(0)
+    }
     
     // 下矢印
     if (event.key === 'ArrowDown') {
@@ -155,7 +168,7 @@ onMounted(() => {
       }
       // activeがない場合、一番下をアクティブにする
       items.value[items.value.length-1].active = true
-    }    
+    }
   })
   
 })
