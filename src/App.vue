@@ -111,8 +111,13 @@ watch(editChanges,(newValue, oldValue) => {
 },{ deep: true })
 
 onMounted(() => {
-  // enterを押すとactiveタスクの編集を開始する
+  /**
+  * キー操作の設定
+  */
+  
   document.addEventListener('keydown', function(event) {
+    
+    // Enter
     if (event.key === 'Enter') {
       // イベントが発生した要素がinput要素でない場合のみ
       if (!event.target.matches('input')) {
@@ -120,7 +125,28 @@ onMounted(() => {
         editActiveItem()
       }
     }
+    
+    // 矢印キーを押すとactiveタスクを移動する
+    if (event.key === 'ArrowDown') {
+      for (let i=0; i<items.value.length; i++) {
+        if (items.value[i].active && i+1<items.value.length) {
+          items.value[i].active = false
+          items.value[i+1].active = true
+          break
+        }
+      }
+    }
+    if (event.key === 'ArrowUp') {
+      for (let i=0; i<items.value.length; i++) {
+        if (items.value[i].active && i-1 >= 0) {
+          items.value[i].active = false
+          items.value[i-1].active = true
+          break
+        }
+      }
+    }    
   })
+  
 })
 
 </script>
