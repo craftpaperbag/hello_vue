@@ -100,8 +100,9 @@ const editChanges = computed(() => {
 */
 watch(editChanges,(newValue, oldValue) => {
   console.log('watch(items) deep: true')
-  console.log(newValue)
-  console.log(oldValue)
+  // 要素数が変わっている場合は、追加・削除のため、activateしない
+  if (newValue.length != oldValue.length) return;
+
   for (let i=0; i < newValue.length; i++){
     if (newValue[i] == false && oldValue[i] == true) {
       activate(i)
@@ -126,24 +127,34 @@ onMounted(() => {
       }
     }
     
-    // 矢印キーを押すとactiveタスクを移動する
+    // 下矢印
     if (event.key === 'ArrowDown') {
       for (let i=0; i<items.value.length; i++) {
-        if (items.value[i].active && i+1<items.value.length) {
-          items.value[i].active = false
-          items.value[i+1].active = true
-          break
+        if (items.value[i].active) {
+          if (i+1<items.value.length) {
+            items.value[i].active = false
+            items.value[i+1].active = true
+          }
+          return
         }
       }
+      // activeがない場合、一番上をアクティブにする
+      items.value[0].active = true
     }
+    
+    // 上矢印
     if (event.key === 'ArrowUp') {
       for (let i=0; i<items.value.length; i++) {
-        if (items.value[i].active && i-1 >= 0) {
-          items.value[i].active = false
-          items.value[i-1].active = true
-          break
+        if (items.value[i].active) {
+          if (i-1 >= 0) {
+            items.value[i].active = false
+            items.value[i-1].active = true
+          }
+          return
         }
       }
+      // activeがない場合、一番下をアクティブにする
+      items.value[items.value.length-1].active = true
     }    
   })
   
