@@ -111,6 +111,26 @@ function deleteItem(deletedItem, index) {
 }
 
 /**
+ * 昇格・降格
+ */
+function promote(item) {
+  if (item.level <= 0) return
+  item.level -= 1
+}
+function promoteActiveItem() {
+  const activeIndex = getActiveIndex()
+  if (activeIndex >= 0) promote(items.value[activeIndex])
+}
+function demote(item) {
+  if (item.level >= 5) return
+  item.level += 1
+}
+function demoteActiveItem() {
+  const activeIndex = getActiveIndex()
+  if (activeIndex >= 0) demote(items.value[activeIndex])
+}
+
+/**
 * activeタスクを編集モードにする
 * activeタスクがない場合は何もしない
 */
@@ -178,7 +198,19 @@ onMounted(() => {
       }
       return
     }
-    
+
+    // 右矢印
+    // activeなitemを降格する
+    if (event.key === 'ArrowRight') {
+      demoteActiveItem()
+      return
+    }
+    // 左矢印
+    // activeなitemを昇格する
+    if (event.key === 'ArrowLeft') {
+      promoteActiveItem()
+      return
+    }    
     // 下矢印
     if (event.key === 'ArrowDown') {
       for (let i=0; i<items.value.length; i++) {
