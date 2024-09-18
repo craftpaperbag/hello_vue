@@ -9,6 +9,10 @@ function generateItemNameInputTagId(index) {
   return 'itemNameInputFor' + index
 }
 
+function levelClassOf(item) {
+  return 'level-' + item.level
+}
+
 /**
  * ref
  */
@@ -35,6 +39,8 @@ Array.from({length: 5}).forEach((element, i) => {
 
 _items[1].active = true
 _items[2].edit = true
+_items[3].level = 1
+_items[4].level = 2
 
 const items = ref(_items)
 const filterStatusMessage = {
@@ -72,8 +78,9 @@ function hasActive() {
 
 async function focus(position) {
   // DOMが追加されるまで待機
-  await document.getElementById('inputItemNameForItem' + position)
-  const inputElement = document.getElementById('inputItemNameForItem' + position)
+  const targetId = generateItemNameInputTagId(position)
+  await document.getElementById(targetId)
+  const inputElement = document.getElementById(targetId)
   inputElement.focus()
 }
 /**
@@ -129,7 +136,6 @@ const editChanges = computed(() => {
 * editがtrueからfalseになったときactivateする
 */
 watch(editChanges,(newValue, oldValue) => {
-  console.log('watch(items) deep: true')
   // 要素数が変わっている場合は、追加・削除のため、activateしない
   if (newValue.length != oldValue.length) return;
 
@@ -210,6 +216,8 @@ onMounted(() => {
 
 <template>
   <div class="container">
+
+    <!-- アプリケーション名とコントロール -->
     <div class="row mb-2">
       <div class="col">
         <h1>{{ title }}</h1>
@@ -230,16 +238,25 @@ onMounted(() => {
     </button>
   </div>
 </div>
+
+<!-- タスク一覧及び状態 -->
 <div class="row">
   <div class="col">
+
+    <!-- フィルターの状態 -->
     <span class="text-muted">
       {{ filterStatus }}
     </span>
+
+    <!-- タスク一覧 -->
     <div class="list-group">
       <template v-for="(item, index) in items" >
+
         <!-- 編集モード -->
         <template v-if="item.edit">
-          <div class="list-group-item">
+          <div
+            class="list-group-item"
+            :class="levelClassOf(item)">
             <div class="input-group">
               <input
               type="text"
@@ -257,17 +274,17 @@ onMounted(() => {
               value="保存"
               >
               <i class="bi-check"></i>
-              
             </button>
           </div>
         </div>
       </template>
+
       <!-- 通常モード -->
       <template v-else>
         <a
         v-show="!filterDoneItems||!item.done"
         class="list-group-item list-group-item-action"
-        :class="{ 'active-item': item.active }"
+        :class="[{ 'active-item': item.active }, levelClassOf(item)]"
         @click="handleClickItem(item, index)">
         <input
         class="form-check-input me-1"
@@ -331,4 +348,9 @@ input::placeholder {
 .delete-button:hover {
   color: red;
 }
+.level-1 { padding-left:  3rem; }
+.level-2 { padding-left:  6rem; }
+.level-3 { padding-left:  9rem; }
+.level-4 { padding-left: 12rem; }
+.level-5 { padding-left: 15rem; }
 </style>
