@@ -17,6 +17,7 @@ const title = ref('todol')
 
 let _items = []
 const itemTemplate = {
+  level: 0,
   name: '',
   active: false,
   done: false,
