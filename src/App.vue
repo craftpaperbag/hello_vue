@@ -69,11 +69,15 @@ function handleClickItem(clickedItem, index) {
   activate(index)
 }
 
-function hasActive() {
+function getActiveIndex() {
   for (let i=0; i<items.value.length; i++) {
-    if (items.value[i].active) return true
+    if (items.value[i].active) return i
   }
-  return false
+  return -1
+}
+
+function hasActive() {
+  return getActiveIndex() >= 0 ? true : false
 }
 
 async function focus(position) {
@@ -87,7 +91,9 @@ async function focus(position) {
 * position...追加する位置（任意）
 */
 async function addItem(position) {
-  console.log('addItem('+position+')')
+  // 0より小さい数字の場合は無視する ※getActiveIndexの結果吸収のため
+  if (position < 0) return
+  // 何も指定されていない場合はゼロと解釈する
   if (!position) position = 0
   let _item = {...itemTemplate}
   _item.edit = true
@@ -154,6 +160,15 @@ onMounted(() => {
   
   document.addEventListener('keydown', function(event) {
     
+
+    // Shift + Enter
+    if (event.shiftKey && event.key === 'Enter') {
+      // activeがあるならその一つ下にアイテムを追加
+      // activeがなければ一番上にitemを追加
+      addItem(getActiveIndex()+1)
+      return
+    }
+
     // Enter
     if (event.key === 'Enter') {
       // イベントが発生した要素がinput要素でない場合のみ
@@ -161,12 +176,7 @@ onMounted(() => {
         // Enterキーが押された時の処理
         editActiveItem()
       }
-    }
-
-    // Shift + Enter
-    if (event.shiftKey && event.key === 'Enter') {
-      // activeがなければ一番上にitemを追加
-      if ( ! hasActive() ) addItem(0)
+      return
     }
     
     // 下矢印
@@ -182,6 +192,7 @@ onMounted(() => {
       }
       // activeがない場合、一番上をアクティブにする
       items.value[0].active = true
+      return
     }
     
     // 上矢印
@@ -197,6 +208,7 @@ onMounted(() => {
       }
       // activeがない場合、一番下をアクティブにする
       items.value[items.value.length-1].active = true
+      return
     }
 
     // エスケープ
@@ -206,6 +218,7 @@ onMounted(() => {
         const editAndFocusItemIndex = document.getElementById(document.activeElement.id).getAttribute('index')
         finishEdit(editAndFocusItemIndex)
       }
+      return
     }
     
   })
