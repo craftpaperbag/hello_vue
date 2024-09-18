@@ -1,6 +1,18 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 
+/**
+ * ヘルパー
+ */
+
+function generateItemNameInputTagId(index) {
+  return 'itemNameInputFor' + index
+}
+
+/**
+ * ref
+ */
+
 const title = ref('todol')
 
 let _items = []
@@ -37,9 +49,12 @@ watch(filterDoneItems, async()=>{
 })
 
 function activate(i) {
-  console.log('activate('+i+')')
-  items.value.forEach((e) => {e.active = false})
+  deactivate()
   items.value[i].active = true
+}
+
+function deactivate() {
+  items.value.forEach((e) => {e.active = false})
 }
 
 function handleClickItem(clickedItem, index) {
@@ -93,6 +108,13 @@ async function editActiveItem() {
       break
     }
   }
+}
+
+/**
+ * indexで指定したアイテムのeditを終了する
+ */
+function finishEdit(index) {
+  items.value[index].edit = false
 }
 
 /**
@@ -169,6 +191,16 @@ onMounted(() => {
       // activeがない場合、一番下をアクティブにする
       items.value[items.value.length-1].active = true
     }
+
+    // エスケープ
+    if (event.key === 'Escape') {
+      // フォーカスの当たっているinputがあれば、editを終了する
+      if (document.activeElement.id) {
+        const editAndFocusItemIndex = document.getElementById(document.activeElement.id).getAttribute('index')
+        finishEdit(editAndFocusItemIndex)
+      }
+    }
+    
   })
   
 })
@@ -212,7 +244,8 @@ onMounted(() => {
               type="text"
               v-model="item.name"
               class="form-control"
-              :id="'inputItemNameForItem'+index"
+              :id="generateItemNameInputTagId(index)"
+              :index
               placeholder="何をしますか？"
               @keydown.enter="(e)=>{e.isComposing ? 'nothing to do' : item.edit=false}"
               @keydown.shift.enter="(e)=>{e.isComposing ? 'nothing to do' : addItem(index+1)}"
