@@ -249,6 +249,9 @@ onMounted(() => {
       if (document.activeElement.id) {
         const editAndFocusItemIndex = document.getElementById(document.activeElement.id).getAttribute('index')
         finishEdit(editAndFocusItemIndex)
+      } else {
+        // フォーカスの当たっているinputがない場合は。activeを解除する
+        deactivate()
       }
       return
     }
