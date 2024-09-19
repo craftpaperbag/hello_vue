@@ -13,6 +13,13 @@ function levelClassOf(item) {
   return 'level-' + item.level
 }
 
+function getIndexOf(targetItem) {
+  for (let i=0; i < items.value.length; i++) {
+    if (items.value[i] === targetItem) return i
+  }
+  return -1
+}
+
 /**
  * ref
  */
