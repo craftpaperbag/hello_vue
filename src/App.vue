@@ -304,24 +304,24 @@ onMounted(() => {
         <template v-if="item.edit">
           <div
             class="list-group-item"
-            :class="levelClassOf(item)">
-            <div class="input-group">
+            :class="[{ 'active-item': item.active }, levelClassOf(item)]">
+            <div class="input-group active-line">
               <input
-              type="text"
-              v-model="item.name"
-              class="form-control"
-              :id="generateItemNameInputTagId(index)"
-              :index
-              placeholder="何をしますか？"
-              @keydown.enter="(e)=>{e.isComposing ? 'nothing to do' : item.edit=false}"
-              @keydown.shift.enter="(e)=>{e.isComposing ? 'nothing to do' : addItem(index+1)}"
-              >
+                type="text"
+                v-model="item.name"
+                class="form-control"
+                :id="generateItemNameInputTagId(index)"
+                :index
+                placeholder="何をしますか？"
+                @keydown.enter="(e)=>{e.isComposing ? 'nothing to do' : item.edit=false}"
+                @keydown.shift.enter="(e)=>{e.isComposing ? 'nothing to do' : addItem(index+1)}"
+                >
               <button
-              class="btn btn-outline-secondary"
-              @click.stop="item.edit=false"
-              value="保存"
-              >
-              <i class="bi-check"></i>
+                class="btn btn-primary"
+                @click.stop="item.edit=false"
+                value="保存"
+                >
+              <i class="bi-check-circle-fill"></i>
             </button>
           </div>
         </div>
@@ -330,40 +330,40 @@ onMounted(() => {
       <!-- 通常モード -->
       <template v-else>
         <a
-        v-show="!filterDoneItems||!item.done"
-        class="list-group-item list-group-item-action"
-        :class="[{ 'active-item': item.active }, levelClassOf(item)]"
-        @click="handleClickItem(item, index)">
-        <input
-        class="form-check-input me-1"
-        type="checkbox"
-        :id="'checkbox'+index"
-        @click.stop
-        v-model="item.done">
-        <label
-        class="form-check-label"
-        :class="{'done-item': item.done}"
-        :for="'checkbox'+index"
-        @click.stop>
-        {{ item.name }}
-      </label>
-      <button class="btn btn-sm edit-button ml-5"
-      v-if="!item.done"
-      @click.stop="item.edit=true"
-      value="編集"
-      >
-      <i class="bi-pencil-fill"></i>
-    </button>
-    <button class="btn btn-sm delete-button"
-    @click.stop="deleteItem(item, index)"
-    value="削除"
-    >
-    <i class="bi-trash-fill"></i>
-  </button>
-</a>
-</template>
-</template>
-</div>
+          v-show="!filterDoneItems||!item.done"
+          class="list-group-item list-group-item-action"
+          :class="[{ 'active-item': item.active }, levelClassOf(item)]"
+          @click="handleClickItem(item, index)">
+          <div class="active-line">
+            <input
+              class="form-check-input me-1"
+              type="checkbox"
+              :id="'checkbox'+index"
+              @click.stop
+              v-model="item.done">
+            <label
+              class="form-check-label"
+              :class="{'done-item': item.done}"
+              :for="'checkbox'+index"
+              @click.stop>
+              {{ item.name }}
+            </label>
+            <button class="btn btn-sm edit-button ml-5"
+              v-if="!item.done"
+              @click.stop="item.edit=true"
+              value="編集">
+              <i class="bi-pencil-fill"></i>
+            </button>
+            <button class="btn btn-sm delete-button"
+              @click.stop="deleteItem(item, index)"
+              value="削除">
+              <i class="bi-trash-fill"></i>
+            </button>
+          </div>
+        </a>
+      </template>
+    </template>
+  </div>
 </div>
 </div>
 </div>
@@ -376,8 +376,11 @@ input::placeholder {
   color: lightgrey;
 }
 
-.active-item {
-  background-color: lightskyblue;
+.active-line {
+  border-left: 5px solid transparent;
+}
+.active-item .active-line {
+  border-left: 5px solid royalblue;
 }
 
 .done-item {
