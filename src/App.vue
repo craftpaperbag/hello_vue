@@ -120,28 +120,54 @@ function deleteItem(deletedItem, index) {
 /**
  * 昇格・降格
  */
+function promoteOrDemote(promoteMode, item, parentLevel, list) {
+  let finish = false
+  let first = false
+  let index = -1
+  if (list == null) list = []
+
+  if (item == null) {
+    finish = true
+  } else {
+    if (parentLevel == null) {
+      parentLevel = item.level
+      first = true
+    }
+    index = getIndexOf(item)
+    if (
+        // 昇格できない条件
+        ( promoteMode && item.level <= 0 ) ||
+        // 降格できない条件
+        ( !promoteMode && (item.level >= 5 || index === 0 ))
+    ) {
+      finish = true
+    }
+  }
+  if (
+      ! finish && 
+      (first || item.level > parentLevel)     
+  ) {
+    // リストへ追加して一つ下のタスクへ伝播する
+    list.push(index)
+    promoteOrDemote(promoteMode, items.value[index+1], parentLevel, list)
+  } else {
+    // 実際の昇格・降格を行う
+    const delta = promoteMode ? -1 : 1
+    list.forEach(i => {
+      if (i < 0) return
+      items.value[i].level += delta
+    })
+  }
+}
 function promote(item) {
-  if (item.level <= 0) return
-  item.level -= 1
+  promoteOrDemote(true, item)
 }
 function promoteActiveItem() {
   const activeIndex = getActiveIndex()
   if (activeIndex >= 0) promote(items.value[activeIndex])
 }
-function demote(item, parentLevel) {
-  const index = getIndexOf(item)
-  let first = false
-  if (parentLevel == null) {
-    parentLevel = item.level
-    first = true
-  }
-  if (item.level >= 5 || index === 0 ) return
-  // 降格元のタスクの子孫なら降格する
-  if ( first || item.level > parentLevel ) {
-    item.level += 1
-    // 一つ下のタスクへ伝播する
-    demote(items.value[index+1], parentLevel)
-  }
+function demote(item) {
+  promoteOrDemote(false, item)
 }
 function demoteActiveItem() {
   const activeIndex = getActiveIndex()
