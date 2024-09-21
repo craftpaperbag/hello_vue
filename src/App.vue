@@ -129,18 +129,20 @@ function promoteOrDemote(promoteMode, item, parentLevel, list) {
   if (item == null) {
     finish = true
   } else {
+    index = getIndexOf(item)
+    // 先頭は昇格・降格できないのでこの時点で終了
+    if (index == 0) return
+    // レベル0は昇格できない
+    if (promoteMode && item.level == 0) finish = true
+    // 初めて呼び出した場合
     if (parentLevel == null) {
       parentLevel = item.level
       first = true
     }
-    index = getIndexOf(item)
-    if (
-        // 昇格できない条件
-        ( promoteMode && item.level <= 0 ) ||
-        // 降格できない条件
-        ( !promoteMode && (item.level >= 5 || index === 0 ))
-    ) {
-      finish = true
+
+    if ( !promoteMode && item.level >= 5) {
+      // これに当てはまった場合は、降格自体を行わない。
+      return
     }
   }
   if (
@@ -154,9 +156,11 @@ function promoteOrDemote(promoteMode, item, parentLevel, list) {
     // 実際の昇格・降格を行う
     const delta = promoteMode ? -1 : 1
     list.forEach(i => {
-      if (i < 0) return
+      if (i < 0 || i >= items.value.length) return
       items.value[i].level += delta
     })
+    // 実際の昇格・降格が終わったら終了
+    return
   }
 }
 function promote(item) {
