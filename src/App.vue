@@ -121,6 +121,7 @@ function deleteItem(deletedItem, index) {
  * 昇格・降格
  */
 function promoteOrDemote(promoteMode, item, parentLevel, list) {
+  const demoteMode = ! promoteMode
   let finish = false
   let first = false
   let index = -1
@@ -130,25 +131,24 @@ function promoteOrDemote(promoteMode, item, parentLevel, list) {
     finish = true
   } else {
     index = getIndexOf(item)
-    // 先頭は昇格・降格できないのでこの時点で終了
-    if (index == 0) return
-    // レベル0は昇格できない
-    if (promoteMode && item.level == 0) finish = true
-    // 初めて呼び出した場合
+    // 初めて呼び出したか区別する
     if (parentLevel == null) {
       parentLevel = item.level
       first = true
     }
-
-    if ( !promoteMode && item.level >= 5) {
-      // これに当てはまった場合は、降格自体を行わない。
+    // レベルが深すぎるものが見つかった場合は操作しない
+    if (demoteMode && item.level >= 5) return
+    // 先頭は昇格・降格できないのでこの時点で終了
+    if (index == 0) return
+    // 降格は一つ上のタスク＋１まで
+    if (demoteMode && first && index-1 in items.value && items.value[index-1].level < item.level) {
       return
     }
+    // レベル0は昇格できない
+    if (promoteMode && item.level == 0) finish = true
+
   }
-  if (
-      ! finish && 
-      (first || item.level > parentLevel)     
-  ) {
+  if ( ! finish && (first || item.level > parentLevel) ) {
     // リストへ追加して一つ下のタスクへ伝播する
     list.push(index)
     promoteOrDemote(promoteMode, items.value[index+1], parentLevel, list)
@@ -156,7 +156,7 @@ function promoteOrDemote(promoteMode, item, parentLevel, list) {
     // 実際の昇格・降格を行う
     const delta = promoteMode ? -1 : 1
     list.forEach(i => {
-      if (i < 0 || i >= items.value.length) return
+      if ( ! i in items.value ) return
       items.value[i].level += delta
     })
     // 実際の昇格・降格が終わったら終了
