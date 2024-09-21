@@ -20,6 +20,20 @@ function getIndexOf(targetItem) {
   return -1
 }
 
+function getDescendants(item) {
+  let d = []
+  const index = getIndexOf(item)
+  const parentLevel = item.level
+  for (let i = index+1; i in items.value; i++) {
+    if (items.value[i].level > parentLevel) {
+      d.push(i)
+    }
+  }
+  console.log('getDescendants(index: '+index+')')
+  console.log(d)
+  return d
+}
+
 /**
  * ref
  */
@@ -110,11 +124,24 @@ async function addItem(position) {
 }
 
 function deleteItem(deletedItem, index) {
-  const confirmed = confirm('「' + deletedItem.name + '」を削除しますか？')
-  if (confirmed) {
-    items.value.splice(index,1)
+  let confirmed = confirm('「' + deletedItem.name + '」を削除しますか？')
+  if ( ! confirmed ) return
+  // 子タスクの削除確認
+  const descendants = getDescendants(deletedItem)
+  if (descendants.length > 0) {
+    confirmed = confirm('子タスク（' + descendants.length + '件）も同時に削除します。よろしいですか？')
   }
-  
+  if ( ! confirmed ) return
+  // 削除
+  let deleteList = [index]
+  for(let i=0; i in descendants; i++) {
+    deleteList.push(descendants[i])
+  }
+  deleteList.sort((a, b) => { return b - a })
+  for(let i=0; i in deleteList; i++) {
+    console.log('delete index: ' + deleteList[i])
+    items.value.splice(deleteList[i], 1)
+  }
 }
 
 /**
