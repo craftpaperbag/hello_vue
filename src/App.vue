@@ -128,9 +128,22 @@ function promoteActiveItem() {
   const activeIndex = getActiveIndex()
   if (activeIndex >= 0) promote(items.value[activeIndex])
 }
-function demote(item) {
+function demote(item, parentLevel) {
+  const index = getIndexOf(item)
+  let first = false
+  if (parentLevel == null) {
+    parentLevel = item.level
+    first = true
+  }
   if (item.level >= 5) return
-  item.level += 1
+  // 一番上のタスクは降格できない
+  if ( index === 0 ) return
+  // 降格元のタスクの子孫なら降格する
+  if ( first || item.level > parentLevel ) {
+    item.level += 1
+    // 一つ下のタスクへ伝播する
+    demote(items.value[index+1], parentLevel)
+  }
 }
 function demoteActiveItem() {
   const activeIndex = getActiveIndex()
