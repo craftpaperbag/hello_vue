@@ -27,6 +27,8 @@ function getDescendants(item) {
   for (let i = index+1; i in items.value; i++) {
     if (items.value[i].level > parentLevel) {
       d.push(i)
+    } else {
+      break
     }
   }
   console.log('getDescendants(index: '+index+')')
