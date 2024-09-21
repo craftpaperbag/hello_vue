@@ -135,9 +135,7 @@ function demote(item, parentLevel) {
     parentLevel = item.level
     first = true
   }
-  if (item.level >= 5) return
-  // 一番上のタスクは降格できない
-  if ( index === 0 ) return
+  if (item.level >= 5 || index === 0 ) return
   // 降格元のタスクの子孫なら降格する
   if ( first || item.level > parentLevel ) {
     item.level += 1
