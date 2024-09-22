@@ -2,6 +2,67 @@
 import { ref, watch, computed, onMounted } from 'vue'
 
 /**
+ * キー操作の定義
+ */
+const keyHandlers = [
+  {
+    shift: true,
+    exceptInput: true,
+    key: 'Enter',
+    handle: () => {
+      addItem(getActiveIndex()+1)
+    }
+  },
+  {
+    exceptInput: true,
+    key: 'Enter',
+    handle: editActiveItem
+  },
+  {
+    shift: true,
+    key: 'Tab',
+    handle: promoteActiveItem
+  },
+  {
+    key: 'Tab',
+    handle: demoteActiveItem
+  },
+  {
+    key: 'ArrowRight',
+    handle: demoteActiveItem
+  },
+  {
+    key: 'ArrowLeft',
+    handle: promoteActiveItem
+  },
+  {
+    key: 'ArrowDown',
+    handle: activateBelow
+  },
+  {
+    key: 'ArrowUp',
+    handle: activateAbove
+  },
+  {
+    key: 'Escape',
+    handle: () => {
+      // フォーカスの当たっているinputがあれば、editを終了する
+      const activeId = document.activeElement.id
+      if (activeId) {
+        const editAndFocusItemIndex = getIndexById(activeId)
+        finishEdit(editAndFocusItemIndex)
+      } else {
+        // フォーカスの当たっているinputがない場合は。activeを解除する
+        deactivate()
+      }
+    }
+  }
+
+  // TODO ここから再開
+
+]
+
+/**
  * ヘルパー
  */
 
@@ -293,81 +354,17 @@ onMounted(() => {
   */
   
   document.addEventListener('keydown', function(event) {
-    
-    
-    // Shift + Enter
-    if (event.shiftKey && event.key === 'Enter') {
-      // イベントが発生した要素がinput要素でない場合のみ
-      if (!event.target.matches('input')) {
-        // activeがあるならその一つ下にアイテムを追加
-        // activeがなければ一番上にitemを追加
-        addItem(getActiveIndex()+1)
-      }
+    let kh
+    // inputで発生したのかどうか調べる
+    const input = event.target.matches('input')
+    for (let i=0; i in keyHandlers; i++) {
+      kh = keyHandlers[i]
+      if (kh.shift && ! event.shiftKey) continue
+      if (kh.exceptInput && input) continue
+      if (kh.key != event.key) continue
+      kh.handle()
       return
     }
-
-    // Enter
-    if (event.key === 'Enter') {
-      // イベントが発生した要素がinput要素でない場合のみ
-      if (!event.target.matches('input')) {
-        // Enterキーが押された時の処理
-        editActiveItem()
-      }
-      return
-    }
-
-    // Shift+TAB
-    // 昇格
-    if (event.shiftKey && event.key === 'Tab') {
-      promoteActiveItem()
-      return
-    }
-    // TAB
-    // 降格
-    if (event.key === 'Tab') {
-      demoteActiveItem()
-      return
-    }
-
-
-    // 右矢印
-    // activeなitemを降格する
-    if (event.key === 'ArrowRight') {
-      demoteActiveItem()
-      return
-    }
-    // 左矢印
-    // activeなitemを昇格する
-    if (event.key === 'ArrowLeft') {
-      promoteActiveItem()
-      return
-    }    
-    // 下矢印
-    if (event.key === 'ArrowDown') {
-      activateBelow()
-      return
-    }
-    
-    // 上矢印
-    if (event.key === 'ArrowUp') {
-      activateAbove()
-      return
-    }
-
-    // エスケープ
-    if (event.key === 'Escape') {
-      // フォーカスの当たっているinputがあれば、editを終了する
-      const activeId = document.activeElement.id
-      if (activeId) {
-        const editAndFocusItemIndex = getIndexById(activeId)
-        finishEdit(editAndFocusItemIndex)
-      } else {
-        // フォーカスの当たっているinputがない場合は。activeを解除する
-        deactivate()
-      }
-      return
-    }
-    
   })
   
 })
