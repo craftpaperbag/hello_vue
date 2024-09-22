@@ -222,6 +222,39 @@ async function editActiveItem() {
 }
 
 /**
+ * アクティブなタスクの変更
+ */
+function activateAbove() {
+  activateAboveOrBelow(true)
+}
+
+function activateBelow() {
+  activateAboveOrBelow(false)
+}
+
+function activateAboveOrBelow(above) {
+  let pioneer = 0
+  let delta = 1
+  if (above) {
+    delta = -1
+    pioneer = items.value.length - 1
+  }
+
+  for (let i=0; i<items.value.length; i++) {
+    if (items.value[i].active) {
+      if (i+delta in items.value) {
+        items.value[i].active = false
+        items.value[i+delta].active = true
+      }
+      return
+    }
+  }
+  // activeがない場合、一番上or一番下をアクティブにする
+  items.value[pioneer].active = true
+
+}
+
+/**
  * indexで指定したアイテムのeditを終了する
  */
 function finishEdit(index) {
@@ -260,9 +293,12 @@ onMounted(() => {
     
     // Shift + Enter
     if (event.shiftKey && event.key === 'Enter') {
-      // activeがあるならその一つ下にアイテムを追加
-      // activeがなければ一番上にitemを追加
-      addItem(getActiveIndex()+1)
+      // イベントが発生した要素がinput要素でない場合のみ
+      if (!event.target.matches('input')) {
+        // activeがあるならその一つ下にアイテムを追加
+        // activeがなければ一番上にitemを追加
+        addItem(getActiveIndex()+1)
+      }
       return
     }
 
@@ -304,33 +340,13 @@ onMounted(() => {
     }    
     // 下矢印
     if (event.key === 'ArrowDown') {
-      for (let i=0; i<items.value.length; i++) {
-        if (items.value[i].active) {
-          if (i+1<items.value.length) {
-            items.value[i].active = false
-            items.value[i+1].active = true
-          }
-          return
-        }
-      }
-      // activeがない場合、一番上をアクティブにする
-      items.value[0].active = true
+      activateBelow()
       return
     }
     
     // 上矢印
     if (event.key === 'ArrowUp') {
-      for (let i=0; i<items.value.length; i++) {
-        if (items.value[i].active) {
-          if (i-1 >= 0) {
-            items.value[i].active = false
-            items.value[i-1].active = true
-          }
-          return
-        }
-      }
-      // activeがない場合、一番下をアクティブにする
-      items.value[items.value.length-1].active = true
+      activateAbove()
       return
     }
 
