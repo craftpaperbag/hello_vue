@@ -257,7 +257,7 @@ onMounted(() => {
   
   document.addEventListener('keydown', function(event) {
     
-
+    
     // Shift + Enter
     if (event.shiftKey && event.key === 'Enter') {
       // activeがあるならその一つ下にアイテムを追加
@@ -275,6 +275,20 @@ onMounted(() => {
       }
       return
     }
+
+    // Shift+TAB
+    // 昇格
+    if (event.shiftKey && event.key === 'Tab') {
+      promoteActiveItem()
+      return
+    }
+    // TAB
+    // 降格
+    if (event.key === 'Tab') {
+      demoteActiveItem()
+      return
+    }
+
 
     // 右矢印
     // activeなitemを降格する
