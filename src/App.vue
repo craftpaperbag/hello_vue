@@ -98,11 +98,16 @@ function getDescendants(item) {
   return d
 }
 
-/**
- * ref
- */
+function getActiveIndex() {
+  for (let i=0; i<items.value.length; i++) {
+    if (items.value[i].active) return i
+  }
+  return -1
+}
 
-const title = ref('todol')
+/**
+ * 配列の準備
+ */
 
 let _items = []
 const itemTemplate = {
@@ -127,6 +132,14 @@ _items[2].edit = true
 _items[3].level = 1
 _items[4].level = 2
 
+/**
+ * 定数
+ */
+const title = 'todol'
+
+/**
+ * リアクティブ
+ */
 const items = ref(_items)
 const filterStatusMessage = {
   all: '全て',
@@ -135,11 +148,18 @@ const filterStatusMessage = {
 const filterStatus = ref(filterStatusMessage.all)
 
 const filterDoneItems = ref(false)
+
+/**
+ * フィルター状態の表示
+ */
 watch(filterDoneItems, async()=>{
   filterStatus.value = filterDoneItems.value ?
   filterStatusMessage.filterDoneItems : filterStatusMessage.all
 })
 
+/**
+ * タスクの操作
+ */
 function activate(i) {
   deactivate()
   items.value[i].active = true
@@ -149,22 +169,6 @@ function deactivate() {
   items.value.forEach((e) => {e.active = false})
 }
 
-function handleClickItem(clickedItem, index) {
-  console.log('handleClickItem')
-  activate(index)
-}
-
-function getActiveIndex() {
-  for (let i=0; i<items.value.length; i++) {
-    if (items.value[i].active) return i
-  }
-  return -1
-}
-
-function hasActive() {
-  return getActiveIndex() >= 0 ? true : false
-}
-
 async function focus(position) {
   // DOMが追加されるまで待機
   const targetId = generateItemNameInputTagId(position)
@@ -172,9 +176,7 @@ async function focus(position) {
   const inputElement = document.getElementById(targetId)
   inputElement.focus()
 }
-/**
-* position...追加する位置（任意）
-*/
+
 async function addItem(position) {
   // 0より小さい数字の場合は無視する ※getActiveIndexの結果吸収のため
   if (position < 0) return
@@ -439,7 +441,7 @@ onMounted(() => {
           v-show="!filterDoneItems||!item.done"
           class="list-group-item list-group-item-action"
           :class="[{ 'active-item': item.active }, levelClassOf(item)]"
-          @click="handleClickItem(item, index)">
+          @click="activate(index)">
           <div class="active-line">
             <input
               class="form-check-input me-1"
