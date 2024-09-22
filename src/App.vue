@@ -9,9 +9,7 @@ const keyHandlers = [
     shift: true,
     exceptInput: true,
     key: 'Enter',
-    handle: () => {
-      addItem(getActiveIndex()+1)
-    }
+    handle: addItem
   },
   {
     exceptInput: true,
@@ -177,11 +175,14 @@ async function focus(position) {
   inputElement.focus()
 }
 
-async function addItem(position) {
-  // 0より小さい数字の場合は無視する ※getActiveIndexの結果吸収のため
-  if (position < 0) return
-  // 何も指定されていない場合はゼロと解釈する
-  if (!position) position = 0
+async function addItem() {
+  let position = 0 // 先頭に追加する
+  const ai = getActiveIndex()
+  if (ai in items.value) {
+    // アクティブがある場合：子タスクの下に追加する
+    const d = getDescendants(items.value[ai])
+    position = d.length > 0 ? d.pop() + 1 : ai + 1
+  }
   let _item = {...itemTemplate}
   _item.edit = true
   items.value.splice(position, 0, _item)
