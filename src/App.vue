@@ -57,9 +57,6 @@ const keyHandlers = [
       }
     }
   }
-
-  // TODO ここから再開
-
 ]
 
 /**
