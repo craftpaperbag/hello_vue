@@ -177,14 +177,17 @@ async function focus(position) {
 
 async function addItem() {
   let position = 0 // 先頭に追加する
+  let level = 0
   const ai = getActiveIndex()
   if (ai in items.value) {
     // アクティブがある場合：子タスクの下に追加する
     const d = getDescendants(items.value[ai])
     position = d.length > 0 ? d.pop() + 1 : ai + 1
+    level = items.value[ai].level // 同じレベルに追加する
   }
   let _item = {...itemTemplate}
   _item.edit = true
+  _item.level = level
   items.value.splice(position, 0, _item)
   // 追加されたinput要素にフォーカスを当てる
   focus(position)
