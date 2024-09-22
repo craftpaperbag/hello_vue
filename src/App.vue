@@ -20,6 +20,10 @@ function getIndexOf(targetItem) {
   return -1
 }
 
+function getIndexById(id) {
+  return document.getElementById(id).getAttribute('index')
+}
+
 function getDescendants(item) {
   let d = []
   const index = getIndexOf(item)
@@ -353,8 +357,9 @@ onMounted(() => {
     // エスケープ
     if (event.key === 'Escape') {
       // フォーカスの当たっているinputがあれば、editを終了する
-      if (document.activeElement.id) {
-        const editAndFocusItemIndex = document.getElementById(document.activeElement.id).getAttribute('index')
+      const activeId = document.activeElement.id
+      if (activeId) {
+        const editAndFocusItemIndex = getIndexById(activeId)
         finishEdit(editAndFocusItemIndex)
       } else {
         // フォーカスの当たっているinputがない場合は。activeを解除する
