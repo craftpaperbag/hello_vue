@@ -65,6 +65,10 @@ function generateItemNameInputTagId(index) {
   return 'itemNameInputFor' + index
 }
 
+function generateItemIdByIndex(index) {
+  return 'item' + index
+}
+
 function levelClassOf(item) {
   return 'level-' + item.level
 }
@@ -91,8 +95,6 @@ function getDescendants(item) {
       break
     }
   }
-  console.log('getDescendants(index: '+index+')')
-  console.log(d)
   return d
 }
 
@@ -161,10 +163,45 @@ watch(filterDoneItems, async()=>{
 function activate(i) {
   deactivate()
   items.value[i].active = true
+  // スクロール
+  console.log('scroll to: '+generateItemIdByIndex(i))
+  document.getElementById(generateItemIdByIndex(i)).scrollIntoView({  
+    behavior: 'smooth',
+    block: 'center'
+  })
 }
 
 function deactivate() {
   items.value.forEach((e) => {e.active = false})
+}
+
+function activateAbove() {
+  activateAboveOrBelow(true)
+}
+
+function activateBelow() {
+  activateAboveOrBelow(false)
+}
+
+function activateAboveOrBelow(above) {
+  let pioneer = 0
+  let delta = 1
+  if (above) {
+    delta = -1
+    pioneer = items.value.length - 1
+  }
+
+  for (let i=0; i<items.value.length; i++) {
+    if (items.value[i].active) {
+      if (i+delta in items.value) {
+        activate(i+delta)
+      }
+      return
+    }
+  }
+  // activeがない場合、一番上or一番下をアクティブにする
+  activate(pioneer)
+
 }
 
 async function focus(position) {
@@ -209,7 +246,6 @@ function deleteItem(deletedItem, index) {
   }
   deleteList.sort((a, b) => { return b - a })
   for(let i=0; i in deleteList; i++) {
-    console.log('delete index: ' + deleteList[i])
     items.value.splice(deleteList[i], 1)
   }
 }
@@ -289,38 +325,6 @@ async function editActiveItem() {
   }
 }
 
-/**
- * アクティブなタスクの変更
- */
-function activateAbove() {
-  activateAboveOrBelow(true)
-}
-
-function activateBelow() {
-  activateAboveOrBelow(false)
-}
-
-function activateAboveOrBelow(above) {
-  let pioneer = 0
-  let delta = 1
-  if (above) {
-    delta = -1
-    pioneer = items.value.length - 1
-  }
-
-  for (let i=0; i<items.value.length; i++) {
-    if (items.value[i].active) {
-      if (i+delta in items.value) {
-        items.value[i].active = false
-        items.value[i+delta].active = true
-      }
-      return
-    }
-  }
-  // activeがない場合、一番上or一番下をアクティブにする
-  items.value[pioneer].active = true
-
-}
 
 /**
  * indexで指定したアイテムのeditを終了する
@@ -366,6 +370,7 @@ onMounted(() => {
       if (kh.exceptInput && input) continue
       if (kh.key != event.key) continue
       kh.handle()
+      event.preventDefault()
       return
     }
   })
@@ -415,6 +420,7 @@ onMounted(() => {
         <!-- 編集モード -->
         <template v-if="item.edit">
           <div
+            :id="generateItemIdByIndex(index)"
             class="list-group-item"
             :class="[{ 'active-item': item.active }, levelClassOf(item)]">
             <div class="input-group active-line">
@@ -442,6 +448,7 @@ onMounted(() => {
       <!-- 通常モード -->
       <template v-else>
         <a
+          :id="generateItemIdByIndex(index)"
           v-show="!filterDoneItems||!item.done"
           class="list-group-item list-group-item-action"
           :class="[{ 'active-item': item.active }, levelClassOf(item)]"
