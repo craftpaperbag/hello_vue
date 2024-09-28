@@ -169,6 +169,8 @@ watch(filterDoneItems, async()=>{
  * タスクの操作
  */
 async function activate(i) {
+  if (!loadCompleted) return
+
   deactivate()
 
   if (i in items.value) {
@@ -184,6 +186,7 @@ async function activate(i) {
 }
 
 function deactivate() {
+  if (!loadCompleted) return
   items.value.forEach((e) => {e.active = false})
 }
 
@@ -360,6 +363,8 @@ const shouldSave = computed(() => {
     length: items.value.length,
     level: items.value.map(item => item.level),
     edit: items.value.map(item => item.edit),
+    name: items.value.map(item => item.name),
+    active: items.value.map(item => item.active),
     done: items.value.map(item => item.done)
   }
 }) 
@@ -374,17 +379,17 @@ watch(editChanges,(newValue, oldValue) => {
   if (newValue.length < oldValue.length) return
 
   for (let i=0; i < newValue.length; i++){
-    // 追加の場合
+    // 追加かつ最後の要素の場合
     if (oldValue.length < i) {
       // 新しいタスクが編集中ならactivateする
-      if (newValue[i] == true) {
-        activate(i)
-        break
-      }
+      if (newValue[i] == true) activate(i)
+      return
     }
-    if (newValue[i] !=  oldValue[i]) {
+
+    // 追加でも削除でもない場合
+    if (newValue.length == oldValue.length && newValue[i] !=  oldValue[i]) {
       activate(i)
-      break
+      return
     }
   }
 },{ deep: true })
@@ -393,6 +398,7 @@ watch(editChanges,(newValue, oldValue) => {
  * saveすべきならsaveする
  */
 watch(shouldSave, (n, o) => {
+  if (!loadCompleted) return
   debug('should save.')
   save()  
 }, {deep: true})
