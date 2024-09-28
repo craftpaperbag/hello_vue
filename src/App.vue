@@ -3,6 +3,7 @@ import { ref, watch, computed, onMounted } from 'vue'
 
 const VERSION = '0.0.0'
 const LOCALSTORAGE_KEY_OF_ITEMS = 'todolItemsVersion' + VERSION
+let loadCompleted = false
 
 /**
  * キー操作の定義
@@ -116,6 +117,7 @@ function save() {
 }
 function load() {
   items.value = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY_OF_ITEMS))
+  loadCompleted = true
 }
 
 /**
@@ -173,15 +175,19 @@ watch(filterDoneItems, async()=>{
 /**
  * タスクの操作
  */
-function activate(i) {
+async function activate(i) {
   deactivate()
-  items.value[i].active = true
-  // スクロール
-  console.log('scroll to: '+generateItemIdByIndex(i))
-  document.getElementById(generateItemIdByIndex(i)).scrollIntoView({  
-    behavior: 'smooth',
-    block: 'center'
-  })
+
+  if (i in items.value) {
+    items.value[i].active = true
+    // スクロール
+    console.log('scroll to: '+generateItemIdByIndex(i))
+    await document.getElementById(generateItemIdByIndex(i))
+    document.getElementById(generateItemIdByIndex(i)).scrollIntoView({  
+      behavior: 'smooth',
+      block: 'center'
+    })
+  }
 }
 
 function deactivate() {
@@ -369,11 +375,21 @@ const shouldSave = computed(() => {
 * editが変わった時にactivateする
 */
 watch(editChanges,(newValue, oldValue) => {
-  // 要素数が変わっている場合は、追加・削除のため、activateしない
-  if (newValue.length != oldValue.length) return;
+  // ロード完了前は無視する
+  if (!loadCompleted) return
+  // 削除の場合はactiveを変更しない。
+  if (newValue.length < oldValue.length) return
 
   for (let i=0; i < newValue.length; i++){
-    if (newValue[i] != true) {
+    // 追加の場合
+    if (oldValue.length < i) {
+      // 新しいタスクが編集中ならactivateする
+      if (newValue[i] == true) {
+        activate(i)
+        break
+      }
+    }
+    if (newValue[i] !=  oldValue[i]) {
       activate(i)
       break
     }
