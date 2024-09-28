@@ -3,7 +3,15 @@ import { ref, watch, computed, onMounted } from 'vue'
 
 const VERSION = '0.0.0'
 const LOCALSTORAGE_KEY_OF_ITEMS = 'todolItemsVersion' + VERSION
+const DEBUG = true
 let loadCompleted = false
+
+/**
+ * ロガー
+ */
+function debug(m) {
+  if (DEBUG) console.log(m)
+}
 
 /**
  * キー操作の定義
@@ -121,10 +129,9 @@ function load() {
 }
 
 /**
- * 配列の準備
+ * タスクのテンプレートの準備
  */
 
-let _items = []
 const itemTemplate = {
   level: 0,
   name: '',
@@ -134,20 +141,6 @@ const itemTemplate = {
 }
 
 /**
-* ダミーデータの設定
-*/
-
-Array.from({length: 5}).forEach((element, i) => {
-  _items.push({...itemTemplate})
-  _items[i].name = 'タスク' + i
-})
-
-_items[1].active = true
-_items[2].edit = true
-_items[3].level = 1
-_items[4].level = 2
-
-/**
  * 定数
  */
 const title = 'todol'
@@ -155,7 +148,7 @@ const title = 'todol'
 /**
  * リアクティブ
  */
-const items = ref(_items)
+const items = ref([])
 const filterStatusMessage = {
   all: '全て',
   filterDoneItems: '未完了のみ'
@@ -181,7 +174,7 @@ async function activate(i) {
   if (i in items.value) {
     items.value[i].active = true
     // スクロール
-    console.log('scroll to: '+generateItemIdByIndex(i))
+    debug('scroll to: '+generateItemIdByIndex(i))
     await document.getElementById(generateItemIdByIndex(i))
     document.getElementById(generateItemIdByIndex(i)).scrollIntoView({  
       behavior: 'smooth',
@@ -400,7 +393,7 @@ watch(editChanges,(newValue, oldValue) => {
  * saveすべきならsaveする
  */
 watch(shouldSave, (n, o) => {
-  console.log('should save.')
+  debug('should save.')
   save()  
 }, {deep: true})
 
