@@ -1,6 +1,9 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 
+const VERSION = '0.0.0'
+const LOCALSTORAGE_KEY_OF_ITEMS = 'todolItemsVersion' + VERSION
+
 /**
  * キー操作の定義
  */
@@ -103,6 +106,16 @@ function getActiveIndex() {
     if (items.value[i].active) return i
   }
   return -1
+}
+
+/**
+ * データの保存・読み込み
+ */
+function save() {
+  localStorage.setItem(LOCALSTORAGE_KEY_OF_ITEMS, JSON.stringify(items.value))
+}
+function load() {
+  items.value = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY_OF_ITEMS))
 }
 
 /**
@@ -341,19 +354,39 @@ const editChanges = computed(() => {
 })
 
 /**
-* editがtrueからfalseになったときactivateする
+ * データを保存すべきかどうか判断するための算出プロパティ
+ */
+const shouldSave = computed(() => {
+  return {
+    length: items.value.length,
+    level: items.value.map(item => item.level),
+    edit: items.value.map(item => item.edit),
+    done: items.value.map(item => item.done)
+  }
+}) 
+
+/**
+* editが変わった時にactivateする
 */
 watch(editChanges,(newValue, oldValue) => {
   // 要素数が変わっている場合は、追加・削除のため、activateしない
   if (newValue.length != oldValue.length) return;
 
   for (let i=0; i < newValue.length; i++){
-    if (newValue[i] == false && oldValue[i] == true) {
+    if (newValue[i] != true) {
       activate(i)
       break
     }
   }
 },{ deep: true })
+
+/**
+ * saveすべきならsaveする
+ */
+watch(shouldSave, (n, o) => {
+  console.log('should save.')
+  save()  
+}, {deep: true})
 
 onMounted(() => {
   /**
@@ -374,6 +407,11 @@ onMounted(() => {
       return
     }
   })
+
+  /**
+   * データのロード
+   */
+  load()
   
 })
 
