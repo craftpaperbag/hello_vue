@@ -451,6 +451,7 @@ watch(shouldSave, (n, o) => {
 }, {deep: true})
 
 function handleKeyEvent(handlers, event) {
+  console.log('event type: '+ event.type+ ', meta: ' + event.metaKey)
   let kh
   // inputで発生したのかどうか調べる
   const input = event.target.matches('input')
