@@ -16,7 +16,17 @@ function debug(m) {
 /**
  * キー操作の定義
  */
-const keyHandlers = [
+const keyUpHandlers = [
+  {
+    meta: true,
+    handle: finishMoving
+  }
+]
+const keyDownHandlers = [
+  {
+    meta: true,
+    handle: startMoving
+  },
   {
     shift: true,
     exceptInput: true,
@@ -121,11 +131,20 @@ function getActiveIndex() {
  * データの保存・読み込み
  */
 function save() {
-  localStorage.setItem(LOCALSTORAGE_KEY_OF_ITEMS, JSON.stringify(items.value))
+  const itemsForSave = items.value.map(item => { return {...item, moving: false} })
+  localStorage.setItem(LOCALSTORAGE_KEY_OF_ITEMS, JSON.stringify(itemsForSave))
 }
 function load() {
-  items.value = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY_OF_ITEMS))
+  const data = localStorage.getItem(LOCALSTORAGE_KEY_OF_ITEMS)
+  if (data) {
+    items.value = JSON.parse(data)
+  } else {
+    save()
+  }
   loadCompleted = true
+}
+function deleteSaveData() {
+  localStorage.clear()
 }
 
 /**
@@ -137,7 +156,8 @@ const itemTemplate = {
   name: '',
   active: false,
   done: false,
-  edit: false
+  edit: false,
+  moving: false
 }
 
 /**
@@ -226,6 +246,33 @@ async function focus(position) {
   const inputElement = document.getElementById(targetId)
   inputElement.focus()
 }
+/**
+ * 移動
+ */
+
+function startMoving() {
+  if ( ! loadCompleted ) return
+  const ai = getActiveIndex()
+  if ( ai < 0 ) return
+  const targets = getDescendants(items.value[ai])
+  targets.push(ai)
+  for (let i=0; i in targets; i++) {
+    items.value[targets[i]].moving = true
+  }
+}
+
+function finishMoving() {
+  console.log(2)
+
+  items.value.forEach(item => {
+    console.log(3)
+    item.moving ? item.moving = false : 'nothing to do'
+  })
+}
+
+/**
+ * 追加・削除
+ */
 
 async function addItem() {
   let position = 0 // 先頭に追加する
@@ -403,24 +450,33 @@ watch(shouldSave, (n, o) => {
   save()  
 }, {deep: true})
 
+function handleKeyEvent(handlers, event) {
+  let kh
+  // inputで発生したのかどうか調べる
+  const input = event.target.matches('input')
+  for (let i=0; i in handlers; i++) {
+    kh = handlers[i]
+    if (kh.meta && ! event.metaKey) continue
+    if (kh.shift && ! event.shiftKey) continue
+    if (kh.exceptInput && input) continue
+    if (kh.key && kh.key != event.key) continue
+    kh.handle()
+    event.preventDefault()
+    return
+  }
+}
+
 onMounted(() => {
   /**
   * キー操作の設定
   */
   
-  document.addEventListener('keydown', function(event) {
-    let kh
-    // inputで発生したのかどうか調べる
-    const input = event.target.matches('input')
-    for (let i=0; i in keyHandlers; i++) {
-      kh = keyHandlers[i]
-      if (kh.shift && ! event.shiftKey) continue
-      if (kh.exceptInput && input) continue
-      if (kh.key != event.key) continue
-      kh.handle()
-      event.preventDefault()
-      return
-    }
+  document.body.addEventListener('keydown', function(event) {
+    handleKeyEvent(keyDownHandlers, event)
+  })
+
+  document.body.addEventListener('keyup', function(event) {
+    handleKeyEvent(keyUpHandlers, event)
   })
 
   /**
@@ -442,7 +498,11 @@ onMounted(() => {
       </div>
       <div class="col d-flex justify-content-end">
         <button class="btn"
-        @click="filterDoneItems=!filterDoneItems">
+          @click="deleteSaveData">
+          【デバッグ用】全データを削除
+        </button>
+        <button class="btn"
+          @click="filterDoneItems=!filterDoneItems">
         <label v-if="filterDoneItems">
           全て表示する
         </label>
@@ -475,7 +535,7 @@ onMounted(() => {
           <div
             :id="generateItemIdByIndex(index)"
             class="list-group-item"
-            :class="[{ 'active-item': item.active }, levelClassOf(item)]">
+            :class="[{ 'active-item': item.active, 'moving-item': item.moving }, levelClassOf(item)]">
             <div class="input-group active-line">
               <button
                 class="btn btn-outline-secondary"
@@ -504,7 +564,7 @@ onMounted(() => {
           :id="generateItemIdByIndex(index)"
           v-show="!filterDoneItems||!item.done"
           class="list-group-item list-group-item-action"
-          :class="[{ 'active-item': item.active }, levelClassOf(item)]"
+          :class="[{ 'active-item': item.active, 'moving-item': item.moving }, levelClassOf(item)]"
           @click="activate(index)">
           <div class="active-line">
             <input
@@ -553,6 +613,10 @@ input::placeholder {
 }
 .active-item .active-line {
   border-left: 5px solid royalblue;
+}
+
+.moving-item {
+  background-color: orange;
 }
 
 .done-item {
