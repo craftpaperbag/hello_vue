@@ -477,6 +477,13 @@ onMounted(() => {
             class="list-group-item"
             :class="[{ 'active-item': item.active }, levelClassOf(item)]">
             <div class="input-group active-line">
+              <button
+                class="btn btn-outline-secondary"
+                @click.stop="item.edit=false"
+                value="保存"
+                >
+                <i class="bi-check"></i>
+              </button>
               <input
                 type="text"
                 v-model="item.name"
@@ -487,13 +494,6 @@ onMounted(() => {
                 @keydown.enter="(e)=>{e.isComposing ? 'nothing to do' : item.edit=false}"
                 @keydown.shift.enter="(e)=>{e.isComposing ? 'nothing to do' : addItem(index+1)}"
                 >
-              <button
-                class="btn btn-primary"
-                @click.stop="item.edit=false"
-                value="保存"
-                >
-              <i class="bi-check-circle-fill"></i>
-            </button>
           </div>
         </div>
       </template>
