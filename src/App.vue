@@ -17,10 +17,6 @@ function debug(m) {
  * キー操作の定義
  */
 const keyUpHandlers = [
-  {
-    meta: true,
-    handle: finishMoving
-  }
 ]
 const keyDownHandlers = [
   {
@@ -262,12 +258,14 @@ function startMoving() {
 }
 
 function finishMoving() {
-  console.log(2)
-
   items.value.forEach(item => {
-    console.log(3)
-    item.moving ? item.moving = false : 'nothing to do'
+    if ( item.moving ) {
+      item.moving = false
+      return true
+    }
   })
+
+  return false
 }
 
 /**
@@ -477,6 +475,8 @@ onMounted(() => {
   })
 
   document.body.addEventListener('keyup', function(event) {
+    // moving中にmetaキーを離した状態を検知したらfinishmoving
+    if ( !event.metaKey ) finishMoving()
     handleKeyEvent(keyUpHandlers, event)
   })
 
