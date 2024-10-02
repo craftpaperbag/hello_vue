@@ -21,7 +21,8 @@ const keyUpHandlers = [
 const keyDownHandlers = [
   {
     meta: true,
-    handle: startMoving
+    handle: startMoving,
+    continue: true
   },
   {
     shift: true,
@@ -53,11 +54,23 @@ const keyDownHandlers = [
   },
   {
     key: 'ArrowDown',
-    handle: activateBelow
+    handle: () => {
+      if ( getMovingIndex() >= 0 ) {
+        moveDown()
+      } else {
+        activateBelow()
+      }
+    }
   },
   {
     key: 'ArrowUp',
-    handle: activateAbove
+    handle: () => {
+      if ( getMovingIndex() >= 0 ) {
+        moveUp()
+      } else {
+        activateAbove()
+      }
+    }
   },
   {
     key: 'Escape',
@@ -119,6 +132,13 @@ function getDescendants(item) {
 function getActiveIndex() {
   for (let i=0; i<items.value.length; i++) {
     if (items.value[i].active) return i
+  }
+  return -1
+}
+
+function getMovingIndex() {
+  for (let i=0; i in items.value; i++) {
+    if (items.value[i].moving) return i
   }
   return -1
 }
@@ -265,10 +285,42 @@ function finishMoving() {
       return true
     }
   })
-
   return false
 }
 
+function moveUp() {
+  moveUpOrDown(true)
+}
+
+function moveDown() {
+  moveUpOrDown(false)
+}
+
+function moveUpOrDown(up) {
+  console.log('moveUpOrDown')
+  let delta
+  const start = getMovingIndex()
+  const movingItem = items.value[start]
+  if (up) {
+    delta = -1
+  } else {
+    delta = 1
+  }
+
+  for (let i=start+delta; i in items.value; i+=delta) {
+    if (items.value[i].level == movingItem.level) {
+      console.log('move: '+ start+' => ' + i)
+      // 同じレベルのタスクが見つかったら、そのタスクの上/下に移動する
+      const movingItems = items.value.filter(item => item.moving)
+      items.value.splice(i, 0, ...movingItems)
+      // 元のアイテムは削除する
+      let deleteStart = start
+      if (up) deleteStart += movingItems.length
+      items.value.splice(deleteStart, movingItems.length)
+      return
+    }
+  }
+}
 /**
  * 追加・削除
  */
@@ -461,6 +513,7 @@ function handleKeyEvent(handlers, event) {
     if (kh.key && kh.key != event.key) continue
     kh.handle()
     event.preventDefault()
+    if (kh.continue) continue
     return
   }
 }
