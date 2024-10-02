@@ -297,7 +297,6 @@ function moveDown() {
 }
 
 function moveUpOrDown(up) {
-  console.log('moveUpOrDown')
   let delta
   let start
   const movingIndex = getMovingIndex()
@@ -312,9 +311,7 @@ function moveUpOrDown(up) {
   }
 
   for (let i=start; i in items.value; i+=delta) {
-    console.log('move check '+i)
     if (items.value[i].level == movingItem.level) {
-      console.log('move: '+ movingIndex +' => ' + i)
       // 同じレベルのタスクが見つかったら、そのタスクの上/下に移動する
       const insertStart = up ? i : i+1
       if (insertStart > items.value.length) return
@@ -322,7 +319,6 @@ function moveUpOrDown(up) {
       // 元のアイテムは削除する
       let deleteStart = movingIndex
       if (up) deleteStart += movingItems.length
-      console.log('delete: '+ deleteStart+', length: ' + movingItems.length)
       items.value.splice(deleteStart, movingItems.length)
       return
     }
