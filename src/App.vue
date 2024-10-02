@@ -253,6 +253,7 @@ function startMoving() {
   const targets = getDescendants(items.value[ai])
   targets.push(ai)
   for (let i=0; i in targets; i++) {
+    items.value[targets[i]].edit = false
     items.value[targets[i]].moving = true
   }
 }
